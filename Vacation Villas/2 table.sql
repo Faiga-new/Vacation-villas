@@ -16,7 +16,7 @@ create table dbo.Villa(
     RenterLastName varchar(35) constraint ck_Villa_RenterLastName_cannot_be_blank check(RenterLastName <> ''),
     StartDate date constraint ck_Villa_StartDate_between_June_23_2025_and_current check(StartDate between '06-23-2025' and getdate()),
     EndDate date,
-    PricePerNight int not null constraint ck_Villa_PricePerNight_between_1_and_2500 check(PricePerNight between 1 and 2500),
+    PricePerNight decimal(6,2) not null constraint ck_Villa_PricePerNight_between_1_and_2500 check(PricePerNight between 1 and 2500),
     MaintenanceCrew varchar(35) not null constraint ck_Villa_MaintenanceCrew_cannot_be_blank check(MaintenanceCrew <> ''),
     ConditionNum int not null constraint ck_ConditionNum_between_1_and_5 check(ConditionNum between 1 and 5),
     ConditionDesc as case ConditionNum

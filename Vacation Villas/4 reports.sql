@@ -4,6 +4,7 @@ from villa v
 --2)	How many villas are rented now, and how many are not (for whatever reason)?
 select NumVillas = count(*), v.ConditionDesc
 from villa v
+where v.Conditionnum = 5
 group by v.ConditionDesc
 --3)	What is the average, minimum, and maximum rental duration?
 select AvgDuration = avg(datediff(day,v.StartDate, v.EndDate)), MinDuration = min(datediff(day,v.StartDate, v.EndDate)), MaxDuration = max(datediff(day,v.StartDate, v.EndDate))
