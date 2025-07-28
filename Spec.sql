@@ -62,18 +62,24 @@ GO
 
 CREATE TABLE dbo.Villa(
     VillaId INT NOT NULL IDENTITY(1,1),
-    Address       VARCHAR(50) NOT NULL CHECK(Address <> ''),
-    City          VARCHAR(20) NOT NULL CHECK(City <> ''),
-    State         CHAR(2)    NOT NULL CHECK(State <> ''),
+    Address       VARCHAR(50) NOT NULL
+        CONSTRAINT ck_Villa_Address_not_blank CHECK(Address <> ''),
+    City          VARCHAR(20) NOT NULL
+        CONSTRAINT ck_Villa_City_not_blank CHECK(City <> ''),
+    State         CHAR(2)    NOT NULL
+        CONSTRAINT ck_Villa_State_not_blank CHECK(State <> ''),
     Zip           CHAR(5)    NOT NULL CHECK(Zip LIKE '[0-9][0-9][0-9][0-9][0-9]'),
     RoomCount     INT        NOT NULL CHECK(RoomCount BETWEEN 1 AND 15),
     Amenity       VARCHAR(8) NOT NULL CHECK(Amenity IN ('backyard','pool')),
-    RenterFirstName VARCHAR(35) NULL CHECK(RenterFirstName <> ''),
-    RenterLastName  VARCHAR(35) NULL CHECK(RenterLastName <> ''),
+    RenterFirstName VARCHAR(35) NULL
+        CONSTRAINT ck_Villa_RenterFirstName_not_blank CHECK(RenterFirstName <> ''),
+    RenterLastName  VARCHAR(35) NULL
+        CONSTRAINT ck_Villa_RenterLastName_not_blank CHECK(RenterLastName <> ''),
     StartDate     DATE NULL CHECK(StartDate BETWEEN '06-23-2025' AND GETDATE()),
     EndDate       DATE NULL,
     PricePerNight DECIMAL(6,2) NOT NULL CHECK(PricePerNight BETWEEN 1 AND 2500),
-    MaintenanceCrew VARCHAR(35) NOT NULL CHECK(MaintenanceCrew <> ''),
+    MaintenanceCrew VARCHAR(35) NOT NULL
+        CONSTRAINT ck_Villa_MaintenanceCrew_not_blank CHECK(MaintenanceCrew <> ''),
     ConditionNum  INT NOT NULL CHECK(ConditionNum BETWEEN 1 AND 5),
     ConditionDesc AS CASE ConditionNum
                         WHEN 1 THEN 'Needs maintenance'
