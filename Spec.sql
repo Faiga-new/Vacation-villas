@@ -46,3 +46,91 @@ Address, RoomCount, Backyard/Pool, Available, RenterName, RentedFrom, RentedUnti
 9501 E. Military Avenue, Algonquin, IL 60102, 11, pool, 1, null, null, null, 1400, Prime Property Care, 3
 242 Inverness Ave., Niceville, FL 32578, 15, backyard, 0, Theodore Moses, 07-15-2025, 07-26-2025, 2500, Elite Villa Maintenance, 5
 */
+-- create and populate database based on the above specification
+USE master;
+GO
+DROP DATABASE IF EXISTS VacationVillaDB;
+GO
+CREATE DATABASE VacationVillaDB;
+GO
+USE VacationVillaDB;
+GO
+
+IF OBJECT_ID('dbo.Villa', 'U') IS NOT NULL
+    DROP TABLE dbo.Villa;
+GO
+
+CREATE TABLE dbo.Villa(
+    VillaId INT NOT NULL IDENTITY(1,1),
+    Address       VARCHAR(50) NOT NULL
+        CONSTRAINT ck_Villa_Address_not_blank CHECK(Address <> ''),
+    City          VARCHAR(20) NOT NULL
+        CONSTRAINT ck_Villa_City_not_blank CHECK(City <> ''),
+    State         CHAR(2)    NOT NULL
+        CONSTRAINT ck_Villa_State_not_blank CHECK(State <> ''),
+    Zip           CHAR(5)    NOT NULL CHECK(Zip LIKE '[0-9][0-9][0-9][0-9][0-9]'),
+    RoomCount     INT        NOT NULL CHECK(RoomCount BETWEEN 1 AND 15),
+    Amenity       VARCHAR(8) NOT NULL CHECK(Amenity IN ('backyard','pool')),
+    RenterFirstName VARCHAR(35) NULL
+        CONSTRAINT ck_Villa_RenterFirstName_not_blank CHECK(RenterFirstName <> ''),
+    RenterLastName  VARCHAR(35) NULL
+        CONSTRAINT ck_Villa_RenterLastName_not_blank CHECK(RenterLastName <> ''),
+    StartDate     DATE NULL CHECK(StartDate BETWEEN '06-23-2025' AND GETDATE()),
+    EndDate       DATE NULL,
+    PricePerNight DECIMAL(6,2) NOT NULL CHECK(PricePerNight BETWEEN 1 AND 2500),
+    MaintenanceCrew VARCHAR(35) NOT NULL
+        CONSTRAINT ck_Villa_MaintenanceCrew_not_blank CHECK(MaintenanceCrew <> ''),
+    ConditionNum  INT NOT NULL CHECK(ConditionNum BETWEEN 1 AND 5),
+    ConditionDesc AS CASE ConditionNum
+                        WHEN 1 THEN 'Needs maintenance'
+                        WHEN 2 THEN 'Needs cleaning'
+                        WHEN 3 THEN 'Needs restocking of supplies'
+                        WHEN 4 THEN 'Ready for guests!'
+                        WHEN 5 THEN 'Rented out'
+                      END PERSISTED,
+    Available AS CASE WHEN ConditionNum = 4 THEN 1 ELSE 0 END PERSISTED,
+    CONSTRAINT pk_Villa PRIMARY KEY (VillaId),
+    CONSTRAINT ck_Villa_StartDate_before_EndDate CHECK(StartDate < EndDate OR EndDate IS NULL)
+);
+GO
+
+INSERT INTO dbo.Villa(Address, City, State, Zip, RoomCount, Amenity,
+                       RenterFirstName, RenterLastName, StartDate, EndDate,
+                       PricePerNight, MaintenanceCrew, ConditionNum)
+VALUES
+('35 First St.', 'Brooklyn', 'NY', '11256', 8, 'pool', 'John', 'Brown', '2025-07-15', '2025-07-20',  950, 'Haven Home Care', 5),
+('254 N. Dogwood Street', 'West Des Moines', 'IA', '50265', 10, 'pool', NULL, NULL, NULL, NULL, 1000, 'Reliable Villa Keepers', 1),
+('7948 Sherwood Lane', 'Jenison', 'MI', '49428', 7, 'backyard', NULL, NULL, NULL, NULL,  675, 'Oceanview Villa Services', 1),
+('8958 Honey Creek Ave.', 'Queensbury', 'NY', '12804', 9, 'pool', 'Gary', 'Monroe', '2025-07-19', '2025-07-27',  975, 'Haven Home Care', 5),
+('8314 Meadowbrook St.', 'Massillon', 'OH', '44647', 11, 'backyard', 'Mike', 'Bailey', '2025-07-14', '2025-07-20', 1200, 'Tranquil Retreat Services', 5),
+('53 Lake Forest Street', 'Harrisburg', 'PA', '17104', 8, 'backyard', 'Steven', 'Holmes', '2025-07-20', '2025-07-24',  800, 'Serenity Clean Team', 5),
+('96 Bear Hill Rd.', 'Whitehall', 'PA', '18052', 12, 'pool', NULL, NULL, NULL, NULL, 1500, 'Peak Performance Cleaners', 2),
+('546 Glendale Lane', 'Princeton', 'NJ', '08540', 10, 'backyard', 'Charlie', 'Beckham', '2025-07-18', '2025-07-25', 1100, 'Prime Property Care', 5),
+('69 Mayfield Drive', 'Clifton', 'NY', '12065', 9, 'pool', 'Benjamin', 'Madden', '2025-07-15', '2025-07-24',  975, 'Sunrise Property Management', 5),
+('790 Halifax Ave.', 'Joliet', 'IL', '60431', 13, 'pool', NULL, NULL, NULL, NULL, 2000, 'Sapphire Cleaners', 4),
+('9501 E. Military Avenue', 'Algonquin', 'IL', '60102', 11, 'pool', NULL, NULL, NULL, NULL, 1400, 'Prime Property Care', 3),
+('242 Inverness Ave.', 'Niceville', 'FL', '32578', 15, 'backyard', 'Theodore', 'Moses', '2025-07-15', '2025-07-26', 2500, 'Elite Villa Maintenance', 5);
+GO
+
+-- Reports
+
+-- 1) How many villas am I currently in charge of?
+SELECT COUNT(*) AS NumVillas
+FROM dbo.Villa;
+
+-- 2) How many villas are rented now, and how many are not?
+SELECT COUNT(*) AS NumVillas, ConditionDesc
+FROM dbo.Villa
+GROUP BY ConditionDesc;
+
+-- 3) Average, minimum, and maximum rental duration
+SELECT AVG(DATEDIFF(day, StartDate, EndDate)) AS AvgDuration,
+       MIN(DATEDIFF(day, StartDate, EndDate)) AS MinDuration,
+       MAX(DATEDIFF(day, StartDate, EndDate)) AS MaxDuration
+FROM dbo.Villa
+WHERE StartDate IS NOT NULL AND EndDate IS NOT NULL;
+
+-- 4) Condition of each villa written out in words
+SELECT Address, City, State, Zip, ConditionDesc
+FROM dbo.Villa;
+GO
