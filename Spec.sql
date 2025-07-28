@@ -61,7 +61,7 @@ IF OBJECT_ID('dbo.Villa', 'U') IS NOT NULL
 GO
 
 CREATE TABLE dbo.Villa(
-    VillaId INT IDENTITY PRIMARY KEY,
+    VillaId INT NOT NULL IDENTITY(1,1),
     Address       VARCHAR(50) NOT NULL CHECK(Address <> ''),
     City          VARCHAR(20) NOT NULL CHECK(City <> ''),
     State         CHAR(2)    NOT NULL CHECK(State <> ''),
@@ -83,6 +83,7 @@ CREATE TABLE dbo.Villa(
                         WHEN 5 THEN 'Rented out'
                       END PERSISTED,
     Available AS CASE WHEN ConditionNum = 4 THEN 1 ELSE 0 END PERSISTED,
+    CONSTRAINT pk_Villa PRIMARY KEY (VillaId),
     CONSTRAINT ck_Villa_StartDate_before_EndDate CHECK(StartDate < EndDate OR EndDate IS NULL)
 );
 GO
